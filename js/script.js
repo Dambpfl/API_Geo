@@ -15,6 +15,9 @@ inputCP.addEventListener("input", () => {
         .then((data) => {
             // Affiche les données dans la console (pour debug si besoin)
             console.log(data)
+            let base = document.createElement("option")
+            base.innerHTML = "Veuillez choisir la ville"
+            selectVille.appendChild(base)
             // Parcours chaque objet "ville" dans les données récupérées
             data.forEach((ville) => {
                 // Crée un nouvel élément d'option HTML
@@ -56,6 +59,6 @@ ville.addEventListener("change", function(event) {
             latitude = data[0].centre.coordinates[1]      
 
             map.setView([latitude, longitude], 13);
-        })
-                    
+            var marker = L.marker([latitude, longitude]).addTo(map)
+        })                
 }) 
