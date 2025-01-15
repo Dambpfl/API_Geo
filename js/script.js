@@ -8,7 +8,7 @@ inputCP.addEventListener("input", () => {
     // Vide le contenu actuel de la liste de sélection de ville
     selectVille.innerText = null
     // Effectue une requête fetch vers l'API de géolocalisation avec le code postal saisi
-    fetch(`https://geo.api.gouv.fr/communes?codePostal=${value}&fields=region,nom,code,codesPostaux,codeRegion&format=json&geometry=centre`)
+    fetch(`https://geo.api.gouv.fr/communes?codePostal=${value}&fields=region,nom,code,centre,codesPostaux,codeRegion&format=json&geometry=centre`)
         //Convertit la réponse en format JSON
         .then((response) => response.json())
         // une fois que les données JSON sont disponibles
@@ -23,6 +23,13 @@ inputCP.addEventListener("input", () => {
                 option.value = `${ville.code}`
                 // Définit le texte affiché de l'option comme le nom de la ville
                 option.innerHTML = `${ville.nom}`
+
+                option.dataset.coordinates = ville.centre.coordinates
+                console.log("coordinates --->",option.dataset.coordinates)
+
+                var coordinates = option.dataset.coordinates
+                console.log(coordinates)
+                
                 // Ajoute l'option à la liste de sélection de ville
                 selectVille.appendChild(option)
             });
@@ -35,3 +42,20 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
+
+const ville = document.getElementById("ville")
+
+ville.addEventListener("change", function(event) {
+    var choise = event.target.value
+    console.log("CHOISE ----->",choise)
+    fetch(`http://geo.api.gouv.fr/communes?code=${choise}&fields=region,nom,centre,codePostaux`)
+        .then((response) => response.json())
+        .then((data) => {
+            
+            longitude = data[0].centre.coordinates[0]           
+            latitude = data[0].centre.coordinates[1]      
+
+            map.setView([latitude, longitude], 13);
+        })
+                    
+}) 
