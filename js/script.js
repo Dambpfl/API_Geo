@@ -26,12 +26,6 @@ inputCP.addEventListener("input", () => {
                 option.value = `${ville.code}`
                 // Définit le texte affiché de l'option comme le nom de la ville
                 option.innerHTML = `${ville.nom}`
-
-                option.dataset.coordinates = ville.centre.coordinates
-                console.log("coordinates --->",option.dataset.coordinates)
-
-                var coordinates = option.dataset.coordinates
-                console.log(coordinates)
                 
                 // Ajoute l'option à la liste de sélection de ville
                 selectVille.appendChild(option)
@@ -46,19 +40,32 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
 
-const ville = document.getElementById("ville")
+selectVille.addEventListener("change", function(event) {
+    var choice = event.target.value
+    console.log("CHOICE ----->", choice)
+    
+    // Vérifier qu'une ville a bien été sélectionnée
+    if (choice && choice !== "") {
+        fetch(`https://geo.api.gouv.fr/communes?code=${choice}&fields=region,nom,centre,codePostaux`)
+            .then((response) => response.json())
+            .then((data) => {
+                console.log("Données de la ville sélectionnée:", data)
+                
+                if (data && data.length > 0) {
+                    const longitude = data[0].centre.coordinates[0]           
+                    const latitude = data[0].centre.coordinates[1]      
 
-ville.addEventListener("change", function(event) {
-    var choise = event.target.value
-    console.log("CHOISE ----->",choise)
-    fetch(`http://geo.api.gouv.fr/communes?code=${choise}&fields=region,nom,centre,codePostaux`)
-        .then((response) => response.json())
-        .then((data) => {
-            
-            longitude = data[0].centre.coordinates[0]           
-            latitude = data[0].centre.coordinates[1]      
-
-            map.setView([latitude, longitude], 13);
-            var marker = L.marker([latitude, longitude]).addTo(map)
-        })                
+                    // Déplacer la carte vers la ville sélectionnée
+                    map.setView([latitude, longitude], 13);
+                    
+                    // Ajouter un marqueur sur la ville
+                    var marker = L.marker([latitude, longitude]).addTo(map)
+                        .bindPopup(data[0].nom)
+                        .openPopup();
+                }
+            })
+            .catch((error) => {
+                console.error("Erreur lors de la récupération des données:", error)
+            })
+    }
 }) 
